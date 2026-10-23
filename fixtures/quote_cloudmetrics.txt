@@ -1,0 +1,18 @@
+Vendor: CloudMetrics Inc
+Product: CloudMetrics Enterprise Observability
+Quote: CM-2026-118
+Prepared for: Northstar Design Studio
+Date: 2026-10-23
+
+Billing options
+Monthly: USD 2,000.00 per 4-week billing cycle
+Annual: USD 19,680.00 prepaid for 12 months (4,320.00 saving versus twelve monthly cycles)
+MCC: 5734
+Renewal date: 2026-11-20
+Cancellation deadline: 2026-11-13
+Cancellation notice: 7 days written notice before the next 4-week renewal date.
+Refunds: Charges are non-refundable once billed for the active billing period. Cancellation is effective at the next billing cycle.
+Payment method: virtual card, USD only.
+
+This is a synthetic vendor quote for the Mandate sandbox prototype. No real
+purchase, merchant or payment instruction is represented.

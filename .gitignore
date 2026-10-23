@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Vercel
+.vercel/
+
+# Local runtime state
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.env

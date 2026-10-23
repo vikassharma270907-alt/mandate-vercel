@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mandate — Intent-Bound Purchase Agent</title>
+<style>
+  :root {
+    --bg: #080c0b;
+    --panel: #0f1513;
+    --panel-2: #121b17;
+    --line: #22312b;
+    --line-soft: rgba(255,255,255,.07);
+    --text: #e9f1ed;
+    --muted: #8fa39a;
+    --muted-2: #657a70;
+    --lime: #c7f36b;
+    --lime-dim: rgba(199,243,107,.12);
+    --teal: #55dfc0;
+    --red: #ff7c7c;
+    --red-dim: rgba(255,124,124,.12);
+    --amber: #ffc46b;
+    --amber-dim: rgba(255,196,107,.12);
+    --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+    --sans: "Segoe UI", "Aptos", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1100px 520px at 75% -10%, rgba(85,223,192,.09), transparent 62%),
+      radial-gradient(900px 500px at 6% 12%, rgba(199,243,107,.06), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 78%);
+    z-index: 0;
+  }
+  a { color: var(--teal); }
+  button { font: inherit; }
+  .wrap { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 0 28px 56px; }
+
+  /* header */
+  header.top {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 22px 0 20px; border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 13px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: var(--lime); color: #0a100c;
+    display: grid; place-items: center; font-weight: 900; font-size: 20px;
+    box-shadow: 0 0 30px rgba(199,243,107,.23);
+  }
+  .brand h1 { margin: 0; font-size: 17px; letter-spacing: .22em; font-weight: 800; }
+  .brand p { margin: 1px 0 0; color: var(--muted); font-size: 11px; letter-spacing: .09em; text-transform: uppercase; }
+  .header-right { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 9px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+    font-size: 10px; letter-spacing: .11em; text-transform: uppercase; font-weight: 700;
+    background: rgba(255,255,255,.015);
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 99px; background: var(--lime); box-shadow: 0 0 8px var(--lime); }
+  .pill.red { color: #ffc1c1; border-color: rgba(255,124,124,.3); background: var(--red-dim); }
+  .pill.amber { color: #ffdca6; border-color: rgba(255,196,107,.3); background: var(--amber-dim); }
+  .pill.lime { color: #e2ffae; border-color: rgba(199,243,107,.33); background: var(--lime-dim); }
+
+  .btn {
+    border: 1px solid var(--line); background: #131b18; color: var(--text);
+    padding: 9px 13px; border-radius: 9px; cursor: pointer;
+    font-size: 12px; font-weight: 700; letter-spacing: .02em;
+    transition: .16s ease; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn:hover { border-color: #3c5147; background: #17221d; transform: translateY(-1px); }
+  .btn.primary { background: var(--lime); border-color: var(--lime); color: #0b120d; box-shadow: 0 8px 30px rgba(199,243,107,.12); }
+  .btn.primary:hover { background: #d5ff83; }
+  .btn.danger { border-color: rgba(255,124,124,.35); color: #ffb0b0; background: rgba(255,124,124,.06); }
+  .btn.danger:hover { background: rgba(255,124,124,.12); }
+  .btn.ghost { background: transparent; }
+  .btn.small { padding: 6px 9px; font-size: 11px; border-radius: 7px; }
+  .btn:disabled { opacity: .48; cursor: wait; transform: none; }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* hero */
+  .hero {
+    display: grid; grid-template-columns: 1.4fr .85fr; gap: 28px;
+    align-items: stretch; padding: 42px 0 30px;
+  }
+  .eyebrow { margin: 0 0 13px; color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+  .hero h2 {
+    margin: 0; max-width: 780px;
+    font-size: clamp(31px, 4.3vw, 58px); line-height: 1.04; letter-spacing: -.045em; font-weight: 650;
+  }
+  .hero h2 em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; color: var(--lime); }
+  .hero-sub { max-width: 620px; color: var(--muted); margin: 18px 0 0; font-size: 14px; }
+  .hero-stats { display: flex; gap: 22px; margin-top: 25px; flex-wrap: wrap; }
+  .hero-stat { border-left: 1px solid var(--line); padding-left: 12px; }
+  .hero-stat strong { display: block; font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .hero-stat span { font-size: 10px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .08em; }
+
+  .balance-panel {
+    border: 1px solid var(--line); border-radius: 18px;
+    background: linear-gradient(145deg, rgba(19,29,25,.96), rgba(10,15,13,.96));
+    padding: 22px; position: relative; overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0,0,0,.24);
+  }
+  .balance-panel::after {
+    content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%;
+    right: -100px; top: -110px; background: radial-gradient(circle, rgba(85,223,192,.16), transparent 68%);
+  }
+  .label { color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; font-weight: 800; }
+  .balance { font-family: var(--mono); font-size: 34px; letter-spacing: -.045em; margin: 6px 0 1px; }
+  .balance small { font-size: 13px; color: var(--muted); letter-spacing: 0; }
+  .balance-meta { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 11px; margin-top: 8px; }
+  .floorbar { height: 8px; border-radius: 99px; background: #1c2923; margin: 18px 0 7px; position: relative; overflow: hidden; }
+  .floorbar .fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6a9f46, var(--lime)); transition: width .5s ease; }
+  .floorbar .floorline { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--amber); box-shadow: 0 0 8px rgba(255,196,107,.5); }
+  .floor-caption { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted-2); }
+  .receipt-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line-soft); }
+  .receipt-copy strong { display: block; font-size: 12px; }
+  .receipt-copy span { color: var(--muted); font-size: 10px; }
+
+  /* layout */
+  .main-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr); gap: 20px; align-items: start; }
+  .stack { display: grid; gap: 20px; min-width: 0; }
+  .panel {
+    background: linear-gradient(155deg, rgba(17,24,21,.96), rgba(12,18,15,.97));
+    border: 1px solid var(--line); border-radius: 17px;
+    padding: 20px; min-width: 0;
+    box-shadow: 0 16px 50px rgba(0,0,0,.13);
+    animation: rise .42s ease both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+  .panel-head h3 { margin: 0; font-size: 13px; letter-spacing: .02em; }
+  .step { color: var(--muted-2); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; margin-bottom: 3px; display: block; }
+  .panel-note { color: var(--muted); font-size: 11px; margin: 0; }
+  .panel-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* empty state */
+  .empty { padding: 32px 20px; border: 1px dashed #2a3b33; border-radius: 13px; text-align: center; background: rgba(255,255,255,.012); }
+  .empty .glyph { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: var(--lime-dim); color: var(--lime); font-family: var(--mono); font-size: 18px; }
+  .empty h4 { margin: 0 0 5px; font-size: 15px; }
+  .empty p { margin: 0 auto 15px; max-width: 480px; color: var(--muted); font-size: 12px; }
+
+  /* decision */
+  .decision-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; margin-bottom: 12px; }
+  .decision-badge {
+    display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px; border-radius: 10px;
+    font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    border: 1px solid rgba(199,243,107,.34); color: #e0ffab; background: var(--lime-dim);
+  }
+  .decision-badge.def { border-color: rgba(255,124,124,.35); color: #ffb9b9; background: var(--red-dim); }
+  .decision-badge .pulse { width: 7px; height: 7px; border-radius: 99px; background: var(--lime); box-shadow: 0 0 0 0 rgba(199,243,107,.45); animation: pulse 2s infinite; }
+  .decision-badge.def .pulse { background: var(--red); }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(199,243,107,.32);} 70% { box-shadow: 0 0 0 9px transparent;} 100% { box-shadow: 0 0 0 0 transparent;} }
+  .reason { color: #c7d4ce; font-size: 12.5px; line-height: 1.65; margin: 8px 0 18px; }
+  .reason strong { color: var(--text); }
+
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+  .plan {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: rgba(255,255,255,.014);
+    position: relative; overflow: hidden;
+  }
+  .plan.recommended { border-color: rgba(199,243,107,.42); background: linear-gradient(145deg, rgba(199,243,107,.07), rgba(255,255,255,.012)); }
+  .plan.recommended::before { content: "ENGINE PICK"; position: absolute; top: 0; right: 0; background: var(--lime); color: #0a100c; font-size: 8px; font-weight: 900; letter-spacing: .1em; padding: 4px 7px; border-bottom-left-radius: 7px; }
+  .plan-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 7px; }
+  .plan h4 { margin: 0; font-size: 12px; letter-spacing: .02em; }
+  .plan .schedule { color: var(--muted); font-size: 10px; font-family: var(--mono); }
+  .plan .minimum { font-family: var(--mono); font-size: 22px; letter-spacing: -.04em; margin: 7px 0 0; }
+  .plan .minimum small { font-size: 10px; color: var(--muted); letter-spacing: 0; }
+  .plan .verdict { display: flex; align-items: center; gap: 6px; font-size: 10px; margin-top: 6px; color: var(--muted); }
+  .plan .verdict b.safe { color: var(--lime); }
+  .plan .verdict b.breach { color: var(--red); }
+  .saving { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line-soft); font-size: 10px; color: var(--muted); }
+  .saving strong { color: var(--text); }
+
+  .chart-wrap { margin-top: 17px; border: 1px solid var(--line-soft); background: rgba(4,8,7,.36); border-radius: 12px; padding: 10px 8px 4px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 7px 3px; }
+  .chart-head span { font-size: 9px; text-transform: uppercase; letter-spacing: .11em; color: var(--muted-2); font-weight: 800; }
+  .legend { display: flex; gap: 12px; align-items: center; font-size: 9px; color: var(--muted); }
+  .legend i { display: inline-block; width: 13px; height: 2px; margin-right: 4px; vertical-align: middle; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--mono); font-size: 9px; fill: #73887d; }
+  .chart .floor-label { fill: var(--amber); font-size: 9px; }
+  .chart .min-label { fill: #d8e5df; font-size: 9px; font-weight: 700; }
+
+  .assumptions { margin-top: 12px; color: var(--muted-2); font-size: 10px; line-height: 1.55; }
+  .assumptions b { color: var(--muted); }
+
+  /* approval */
+  .approval-box { margin-top: 18px; border: 1px solid rgba(85,223,192,.24); background: rgba(85,223,192,.045); border-radius: 12px; padding: 15px; }
+  .approval-box.stale { border-color: rgba(255,196,107,.32); background: var(--amber-dim); }
+  .approval-box.deferred { border-color: rgba(255,124,124,.28); background: var(--red-dim); }
+  .approval-box.approved { border-color: rgba(199,243,107,.3); background: rgba(199,243,107,.055); }
+  .approval-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .approval-title h4 { margin: 0; font-size: 12px; }
+  .approval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 16px; margin: 12px 0; }
+  .kv { display: flex; justify-content: space-between; gap: 10px; font-size: 10.5px; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,.05); }
+  .kv span { color: var(--muted); }
+  .kv b { font-family: var(--mono); font-size: 10px; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+  .approval-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+  .approval-foot p { margin: 0; color: var(--muted); font-size: 10px; max-width: 70%; }
+  .stripe { display: flex; align-items: flex-start; gap: 9px; margin-top: 10px; }
+  .stripe .icon { flex: 0 0 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 900; background: rgba(255,196,107,.14); color: var(--amber); }
+  .stripe p { margin: 0; color: #d8c39b; font-size: 11px; }
+  .stripe strong { display: block; color: var(--text); font-size: 11px; margin-bottom: 1px; }
+
+  /* card */
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 13px; }
+  .card-actions .btn { flex: 1 1 auto; justify-content: center; }
+  .custom-charge { display: flex; gap: 8px; margin-top: 8px; }
+  .custom-charge input {
+    flex: 1; min-width: 0; background: #0a100d; color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 11px;
+  }
+  .custom-charge input:focus { outline: 1px solid rgba(199,243,107,.5); border-color: transparent; }
+  .card-visual {
+    border-radius: 14px; padding: 17px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #1d2f27 0%, #111d18 58%, #17251f 100%);
+    border: 1px solid rgba(199,243,107,.22); min-height: 148px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .card-visual::before {
+    content: ""; position: absolute; width: 300px; height: 300px; border-radius: 50%;
+    right: -110px; bottom: -200px; border: 1px solid rgba(199,243,107,.13);
+  }
+  .card-visual::after {
+    content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%;
+    right: -65px; bottom: -160px; border: 1px solid rgba(199,243,107,.1);
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-brand { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+  .card-brand .m { width: 22px; height: 22px; border-radius: 6px; background: var(--lime); color: #0a100c; display: grid; place-items: center; font-size: 12px; }
+  .card-type { font-size: 8px; letter-spacing: .12em; color: var(--lime); border: 1px solid rgba(199,243,107,.24); border-radius: 99px; padding: 3px 6px; }
+  .card-number { font-family: var(--mono); font-size: 14px; letter-spacing: .12em; margin-top: 24px; color: #dbe8e1; }
+  .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: 19px; font-family: var(--mono); font-size: 9px; color: var(--muted); }
+  .card-bottom b { color: var(--text); font-weight: 500; }
+  .limit-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .chip { border: 1px solid var(--line); background: rgba(255,255,255,.015); border-radius: 7px; padding: 5px 7px; font-size: 9px; color: var(--muted); }
+  .chip b { color: var(--text); font-family: var(--mono); font-weight: 500; }
+
+  /* quote / misc rail */
+  .quote-vendor { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .quote-product { color: var(--muted); font-size: 11px; margin-top: 1px; }
+  .price-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+  .price-row span { color: var(--muted); font-size: 10.5px; }
+  .price-row b { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 5px; font-size: 8px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,.05); color: var(--muted); }
+  .tag.lime { background: var(--lime-dim); color: #dbffa0; }
+  .tag.red { background: var(--red-dim); color: #ffb6b6; }
+  .tag.amber { background: var(--amber-dim); color: #ffd9a2; }
+  .tag.teal { background: rgba(85,223,192,.09); color: #a2f4e1; }
+  .quote-meta { margin-top: 10px; display: grid; gap: 5px; }
+  .quote-meta .kv { font-size: 10px; }
+  details.raw { margin-top: 12px; }
+  details.raw summary { cursor: pointer; color: var(--muted); font-size: 10px; }
+  details.raw pre { white-space: pre-wrap; font-family: var(--mono); font-size: 9px; color: #93a89d; line-height: 1.55; max-height: 190px; overflow: auto; padding: 9px; background: rgba(0,0,0,.25); border: 1px solid var(--line-soft); border-radius: 7px; margin: 8px 0 0; }
+
+  .passport-status { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .passport-hash { font-family: var(--mono); font-size: 9px; color: #9cb0a6; overflow-wrap: anywhere; }
+  .passport-empty { color: var(--muted); font-size: 11px; padding: 8px 0 2px; }
+
+  .live-badge { font-family: var(--mono); font-size: 10px; padding: 5px 8px; border-radius: 7px; border: 1px solid rgba(199,243,107,.28); color: #dfffaa; background: var(--lime-dim); }
+  .live-badge.freeze { border-color: rgba(255,124,124,.35); color: #ffb8b8; background: var(--red-dim); }
+  .live-reason { color: var(--muted); font-size: 10.5px; margin-top: 9px; }
+
+  .lab-grid { display: grid; gap: 7px; }
+  .lab-btn { text-align: left; justify-content: space-between; width: 100%; }
+  .lab-result { margin-top: 11px; border: 1px solid var(--line-soft); border-radius: 8px; padding: 10px; background: rgba(0,0,0,.16); }
+  .lab-result h5 { margin: 0 0 5px; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+  .lab-result p, .lab-result li { font-size: 10px; color: #b9c9c2; margin: 0; }
+  .lab-result ul { margin: 4px 0 0; padding-left: 15px; }
+  .lab-result code { font-family: var(--mono); font-size: 9px; color: var(--lime); }
+
+  /* transactions + log */
+  .tx-list { display: grid; gap: 6px; }
+  .tx {
+    display: grid; grid-template-columns: 66px 1fr auto; gap: 10px; align-items: center;
+    padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: 8px; background: rgba(255,255,255,.012);
+  }
+  .tx-status { font-size: 8px; font-weight: 900; text-align: center; padding: 4px 3px; border-radius: 5px; letter-spacing: .05em; background: var(--lime-dim); color: #d9ff9d; }
+  .tx-status.declined { background: var(--red-dim); color: #ffb4b4; }
+  .tx-main b { font-size: 11px; font-weight: 600; }
+  .tx-main span { display: block; color: var(--muted); font-size: 9px; margin-top: 1px; }
+  .tx-amount { font-family: var(--mono); font-size: 11px; text-align: right; }
+  .tx-amount small { display: block; color: var(--muted-2); font-size: 8px; }
+  .empty-line { color: var(--muted-2); font-size: 11px; padding: 10px 0; }
+
+  .log { display: grid; gap: 5px; max-height: 260px; overflow: auto; padding-right: 4px; }
+  .log-row { display: grid; grid-template-columns: 54px 145px 1fr; gap: 9px; align-items: baseline; font-size: 10px; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,.05); }
+  .log-row time { font-family: var(--mono); color: var(--muted-2); font-size: 9px; }
+  .log-row b { color: var(--muted); font-size: 8px; letter-spacing: .07em; text-transform: uppercase; font-weight: 800; }
+  .log-row span { color: #b9c7c0; }
+
+  footer.foot { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--muted-2); font-size: 9.5px; letter-spacing: .02em; }
+  footer.foot b { color: var(--muted); }
+  .toast {
+    position: fixed; z-index: 90; left: 50%; bottom: 23px; transform: translate(-50%, 20px);
+    background: #17231e; border: 1px solid #3e564a; color: var(--text);
+    padding: 11px 15px; border-radius: 10px; font-size: 12px; max-width: min(680px, calc(100vw - 32px));
+    box-shadow: 0 18px 60px rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: .22s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err { border-color: rgba(255,124,124,.5); background: #2a1717; color: #ffc4c4; }
+
+  @media (max-width: 1080px) {
+    .hero { grid-template-columns: 1fr; padding-top: 32px; }
+    .main-grid { grid-template-columns: 1fr; }
+    .balance-panel { max-width: 600px; }
+  }
+  @media (max-width: 700px) {
+    .wrap { padding: 0 15px 40px; }
+    header.top { align-items: flex-start; flex-direction: column; }
+    .header-right { justify-content: flex-start; }
+    .hero h2 { font-size: 34px; }
+    .plan-grid { grid-template-columns: 1fr; }
+    .approval-grid { grid-template-columns: 1fr; }
+    .log-row { grid-template-columns: 48px 1fr; }
+    .log-row span { grid-column: 2; }
+    .tx { grid-template-columns: 58px 1fr auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div>
+        <h1>MANDATE</h1>
+        <p>Intent-bound purchase agent</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="pill"><span class="dot"></span> Sandbox live</span>
+      <span class="pill">Synthetic data</span>
+      <span class="pill" id="agent-mode">agent loading</span>
+      <button class="btn ghost small" data-act="reset" title="Reset the in-memory sandbox">Reset demo</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Airwallex Agentic Banking Hackathon · Track 2</p>
+      <h2>Cash decides. The card enforces.<br><em>The model only reads.</em></h2>
+      <p class="hero-sub">
+        A deterministic engine reads trusted cash, compares annual versus monthly billing,
+        and binds the human's approval to one exact set of terms. The language model may
+        explain — it cannot set a limit.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>8 weeks</strong><span>Inclusive horizon</span></div>
+        <div class="hero-stat"><strong>47 tests</strong><span>Engine suite</span></div>
+        <div class="hero-stat"><strong>HMAC-SHA256</strong><span>Sealed passport</span></div>
+        <div class="hero-stat"><strong>0</strong><span>Model-set limits</span></div>
+      </div>
+    </div>
+    <div class="balance-panel">
+      <div class="label">Available cash · USD</div>
+      <div class="balance" id="balance">$32,000.00</div>
+      <div class="balance-meta">
+        <span>available_amount</span>
+        <span>Reserve floor <strong id="floor">$15,000.00</strong></span>
+      </div>
+      <div class="floorbar"><div class="fill" id="balance-fill" style="width:72%"></div><div class="floorline" id="floor-line" style="left:46%"></div></div>
+      <div class="floor-caption"><span>cash</span><span>floor</span></div>
+      <div class="receipt-row">
+        <div class="receipt-copy">
+          <strong id="receipt-title">Expected receivable</strong>
+          <span id="receipt-sub">$12,000.00 at week 4</span>
+        </div>
+        <button class="btn small" data-act="receipt" id="receipt-btn">Land receipt</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="main-grid">
+    <div class="stack">
+      <section class="panel" id="decision-panel">
+        <div class="panel-head">
+          <div><span class="step">01 / POLICY ENGINE</span><h3>Decision</h3></div>
+          <div class="panel-actions" id="decision-actions"></div>
+        </div>
+        <div id="decision-body"></div>
+      </section>
+
+      <section class="panel" id="card-panel">
+        <div class="panel-head">
+          <div><span class="step">03 / CARD ENFORCEMENT</span><h3>Virtual card controls</h3></div>
+          <span class="pill" id="card-pill">No card</span>
+        </div>
+        <div id="card-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="step">04 / LEDGER</span><h3>Authorization attempts</h3></div>
+          <span class="panel-note">Sandbox simulation · no funds move</span>
+        </div>
+        <div id="tx-body"></div>
+      </section>
+    </div>
+
+    <aside class="stack">
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="step">INPUT / UNTRUSTED</span><h3>Vendor quote</h3></div>
+          <span class="tag amber">DATA ONLY</span>
+        </div>
+        <div id="quote-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="step">02 / APPROVAL BINDING</span><h3>Decision Passport</h3></div>
+          <span class="pill" id="passport-pill">None</span>
+        </div>
+        <div id="passport-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="step">LIVE / RECOMMEND ONLY</span><h3>Plan re-check</h3></div>
+          <button class="btn small" data-act="live-plan">Re-check</button>
+        </div>
+        <div id="live-body"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="step">SECURITY LAB</span><h3>Trust-boundary probes</h3></div>
+        </div>
+        <div class="lab-grid">
+          <button class="btn lab-btn" data-act="injection"><span>Prompt-injection quote</span><span>↗</span></button>
+          <button class="btn lab-btn" data-act="tamper"><span>Tamper with passport</span><span>↗</span></button>
+          <button class="btn lab-btn" data-act="retry"><span>Retry same request ID</span><span>↗</span></button>
+        </div>
+        <div id="lab-result"></div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="panel" style="margin-top:20px">
+    <div class="panel-head">
+      <div><span class="step">AUDIT</span><h3>Event log</h3></div>
+      <span class="panel-note">Everything shown is local sandbox state</span>
+    </div>
+    <div class="log" id="log-body"></div>
+  </section>
+
+  <footer class="foot">
+    <span><b>Mandate v2.2</b> · sandbox prototype · synthetic demo data only · not production banking software</span>
+    <span>Policy numbers are computed in Python. Model output is untrusted until validated.</span>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (selector) => document.querySelector(selector);
+  let state = null;
+  let lab = null;
+  let busy = false;
+  let toastTimer = null;
+
+  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+
+  const num = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const money = (value) => "$" + num(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const compact = (value) => {
+    const n = num(value);
+    if (Math.abs(n) >= 1000) return "$" + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k";
+    return "$" + n.toFixed(0);
+  };
+  const shortHash = (value, length = 14) => value ? String(value).slice(0, length) + "…" : "—";
+  const shortId = (value) => value ? String(value).replace(/^card_/, "card · ") : "—";
+  const statusTag = (status) => {
+    const cls = status === "APPROVED" ? "lime" : status === "DECLINED" || status === "INVALID" ? "red" : status === "EXPIRED" || status === "MISMATCH" || status === "STALE" ? "amber" : "teal";
+    return `<span class="tag ${cls}">${esc(status)}</span>`;
+  };
+
+  function toast(message, isError = false) {
+    const el = $("#toast");
+    el.textContent = message;
+    el.classList.toggle("err", !!isError);
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), isError ? 5200 : 3200);
+  }
+
+  async function api(path, body) {
+    const options = { method: body === undefined ? "GET" : "POST", headers: { "Content-Type": "application/json" } };
+    if (body !== undefined) options.body = JSON.stringify(body);
+    const response = await fetch(path, options);
+    let data = {};
+    try { data = await response.json(); } catch (_) { data = { error: "Invalid server response" }; }
+    if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+    return data;
+  }
+
+  async function perform(path, body, successMessage) {
+    if (busy) return;
+    busy = true;
+    document.body.dataset.busy = "1";
+    document.querySelectorAll("button").forEach((button) => { button.disabled = true; });
+    try {
+      const data = await api(path, body);
+      if (data.state) state = data.state;
+      if (data.result) lab = data.result;
+      if (data.transaction) {
+        const tx = data.transaction;
+        lab = {
+          title: `Authorization ${tx.status}`,
+          lines: [
+            `${money(tx.amount)} USD at ${tx.merchant} (MCC ${tx.merchant_category})`,
+            tx.decline_reason ? `Declined: ${tx.decline_reason}` : "Approved by card controls. No funds moved in this simulation."
+          ]
+        };
+      }
+      if (data.live_plan) {
+        lab = {
+          title: `Live plan: ${data.live_plan.decision}`,
+          lines: [data.live_plan.reason]
+        };
+      }
+      render();
+      if (successMessage) toast(successMessage);
+    } catch (error) {
+      toast(error.message, true);
+    } finally {
+      busy = false;
+      delete document.body.dataset.busy;
+      document.querySelectorAll("button").forEach((button) => { button.disabled = false; });
+    }
+  }
+
+  function renderBalance() {
+    if (!state) return;
+    const balance = num(state.sandbox.available_balance);
+    const floor = num(state.sandbox.reserve_floor);
+    const max = Math.max(balance, floor) * 1.18 || 1;
+    $("#balance").innerHTML = `${money(balance)} <small>USD</small>`;
+    $("#floor").textContent = money(floor);
+    $("#balance-fill").style.width = `${Math.min(100, (balance / max) * 100)}%`;
+    $("#floor-line").style.left = `${Math.min(98, (floor / max) * 100)}%`;
+    const receipt = state.receivable;
+    $("#receipt-title").textContent = receipt.received ? "Receivable landed" : "Expected receivable";
+    $("#receipt-sub").textContent = receipt.received
+      ? `${money(receipt.amount)} confirmed in available cash`
+      : `${money(receipt.amount)} at week ${receipt.week} · expected, not counted in confirmed cash`;
+    $("#receipt-btn").disabled = receipt.received || busy;
+    $("#receipt-btn").textContent = receipt.received ? "Received" : "Land receipt";
+    $("#agent-mode").textContent = state.agent_mode === "demo-deterministic" ? "Demo extractor" : "LLM agent";
+  }
+
+  function renderDecision() {
+    const proposal = state?.proposal;
+    const actions = $("#decision-actions");
+    const body = $("#decision-body");
+
+    if (!proposal) {
+      actions.innerHTML = "";
+      body.innerHTML = `
+        <div class="empty">
+          <div class="glyph">→</div>
+          <h4>Pick a payment path from cash, not from a prompt.</h4>
+          <p>The engine will compare <b>$19,680 annual</b> against <b>3 × $2,000 monthly</b> across the inclusive 8-week horizon, with a <b>$15,000 reserve floor</b>. The expected $12,000 receivable is not counted in the conservative case.</p>
+          <button class="btn primary" data-act="run">Run the policy engine</button>
+        </div>`;
+      return;
+    }
+
+    const policy = proposal.policy;
+    const isDefer = policy.decision === "DEFER";
+    actions.innerHTML = `<button class="btn small ${isDefer ? "primary" : ""}" data-act="run">Re-run engine</button>`;
+
+    const annual = policy.annual_cash_safe
+      ? `<b class="safe">SAFE</b> at the floor`
+      : `<b class="breach">BREACH</b> by ${money(num(policy.reserve_floor) - num(policy.annual_confirmed_minimum_balance))}`;
+    const monthly = policy.monthly_cash_safe
+      ? `<b class="safe">SAFE</b> at the floor`
+      : `<b class="breach">BREACH</b> by ${money(num(policy.reserve_floor) - num(policy.monthly_confirmed_minimum_balance))}`;
+
+    const annualPicked = policy.decision === "PROPOSE_ANNUAL";
+    const monthlyPicked = policy.decision === "PROPOSE_MONTHLY";
+    const saving = num(policy.annual_saving);
+    const savingText = saving > 0
+      ? `<strong>+${money(saving)}</strong> vs twelve monthly cycles`
+      : saving < 0
+        ? `<strong style="color:var(--red)">${money(Math.abs(saving))} more</strong> than twelve monthly cycles`
+        : "Same price as twelve monthly cycles";
+
+    body.innerHTML = `
+      <div class="decision-top">
+        <div class="decision-badge ${isDefer ? "def" : ""}"><span class="pulse"></span>${esc(policy.decision)}</div>
+        <span class="panel-note">policy ${esc(policy.policy_version)} · request ${esc(proposal.id)}</span>
+      </div>
+      <p class="reason">${esc(policy.reason)}</p>
+      <div class="plan-grid">
+        <div class="plan ${annualPicked ? "recommended" : ""}">
+          <div class="plan-head"><h4>Annual prepay</h4><span class="schedule">1 × ${money(state.quote.terms.annual_price)}</span></div>
+          <div class="minimum">${money(policy.annual_confirmed_minimum_balance)} <small>min · week ${policy.annual_confirmed_minimum_week}</small></div>
+          <div class="verdict">${annual}</div>
+          <div class="saving">${savingText}</div>
+        </div>
+        <div class="plan ${monthlyPicked ? "recommended" : ""}">
+          <div class="plan-head"><h4>Monthly</h4><span class="schedule">3 × ${money(state.quote.terms.monthly_price)}</span></div>
+          <div class="minimum">${money(policy.monthly_confirmed_minimum_balance)} <small>min · week ${policy.monthly_confirmed_minimum_week}</small></div>
+          <div class="verdict">${monthly}</div>
+          <div class="saving">Confirmed cash only. Expected inflows excluded.</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-head">
+          <span>Confirmed-cash trajectory</span>
+          <div class="legend"><span><i style="background:var(--red)"></i>annual</span><span><i style="background:var(--lime)"></i>monthly</span><span><i style="background:var(--amber);opacity:.7"></i>floor</span></div>
+        </div>
+        ${renderChart(policy)}
+      </div>
+      <div class="assumptions"><b>Assumptions:</b> ${esc(policy.assumptions.horizon)} · ${esc(policy.assumptions.monthly_cadence)} · ${esc(policy.assumptions.conservative_case)}. Expected outflows always count.</div>
+      ${renderAgentNote(proposal)}
+      ${renderApproval(proposal)}
+    `;
+  }
+
+  function renderAgentNote(proposal) {
+    const output = proposal.agent_output || {};
+    const mode = output.agent_mode === "demo-deterministic" ? "demo extractor" : "live model";
+    const discrepancyCount = (output.discrepancies || []).length;
+    const flagCount = (output.security_flags || []).length;
+    const match = output.recommendation === proposal.decision;
+    return `<div class="assumptions" style="margin-top:11px;padding-top:10px;border-top:1px solid var(--line-soft)">
+      <b>Agent boundary:</b> ${esc(mode)} recommendation <span class="tag ${match ? "lime" : "red"}">${esc(output.recommendation || "—")}</span>
+      ${match ? "matches" : "does not match"} the engine. ${discrepancyCount} discrepancy flag(s), ${flagCount} security flag(s). Model output never reaches card controls.
+    </div>`;
+  }
+
+  function renderApproval(proposal) {
+    if (proposal.status === "DEFERRED") {
+      return `<div class="approval-box deferred">
+        <div class="approval-title"><h4>No approval path</h4><span class="tag red">DEFER</span></div>
+        <div class="stripe"><span class="icon">!</span><p><strong>The engine refused both plans.</strong>Fund the account or change the timing, then re-run the policy engine. No card can be issued from this proposal.</p></div>
+      </div>`;
+    }
+    if (proposal.status === "STALE") {
+      return `<div class="approval-box stale">
+        <div class="approval-title"><h4>Terms are stale</h4><span class="tag amber">RE-RUN REQUIRED</span></div>
+        <div class="stripe"><span class="icon">↻</span><p><strong>${esc(proposal.stale_reason || "Cash changed after this proposal was created.")}</strong>Re-run the engine before approving anything.</p></div>
+        <div class="approval-foot"><p>The old approval cannot bind to the new cash position.</p><button class="btn primary small" data-act="run">Re-run engine</button></div>
+      </div>`;
+    }
+    if (proposal.status === "APPROVED") {
+      return `<div class="approval-box approved">
+        <div class="approval-title"><h4>Human approval bound</h4><span class="tag lime">PASSPORT ISSUED</span></div>
+        <div class="stripe"><span class="icon" style="background:var(--lime-dim);color:var(--lime)">✓</span><p><strong>${esc(proposal.passport_id)}</strong>The exact seven approved fields are sealed. Card controls were derived from this passport and sent to the sandbox.</p></div>
+      </div>`;
+    }
+    const intent = proposal.submitted_intent;
+    if (!intent) return "";
+    return `<div class="approval-box">
+      <div class="approval-title"><h4>Approve the exact terms</h4><span class="tag teal">HUMAN REQUIRED</span></div>
+      <div class="approval-grid">
+        <div class="kv"><span>Vendor</span><b>${esc(intent.vendor)}</b></div>
+        <div class="kv"><span>Cadence</span><b>${esc(intent.billing_cadence)}</b></div>
+        <div class="kv"><span>Amount</span><b>${money(intent.amount)} ${esc(intent.currency)}</b></div>
+        <div class="kv"><span>MCC</span><b>${esc(intent.merchant_category)}</b></div>
+        <div class="kv"><span>Policy</span><b>${esc(intent.policy_version)}</b></div>
+        <div class="kv"><span>Evidence</span><b title="${esc(intent.evidence_reference)}">${esc(shortHash(intent.evidence_reference, 24))}</b></div>
+      </div>
+      <div class="approval-foot">
+        <p>Approval is bound to these seven fields with HMAC-SHA256. Any change to amount, cadence or vendor invalidates the passport.</p>
+        <button class="btn primary" data-act="approve" data-token="${esc(proposal.approval_token || "")}">Approve &amp; issue card</button>
+      </div>
+    </div>`;
+  }
+
+  function renderChart(policy) {
+    const annual = policy.annual_confirmed_trajectory || [];
+    const monthly = policy.monthly_confirmed_trajectory || [];
+    if (!annual.length && !monthly.length) return "";
+    const floor = num(policy.reserve_floor);
+    const values = [...annual, ...monthly].map((point) => num(point.balance)).concat([floor]);
+    const lo = Math.max(0, Math.min(...values) - 1800);
+    const hi = Math.max(...values) + 1800;
+    const W = 660, H = 196, L = 48, R = 16, T = 16, B = 26;
+    const maxWeek = Math.max(8, ...annual.map((p) => p.week), ...monthly.map((p) => p.week));
+    const x = (week) => L + (week / maxWeek) * (W - L - R);
+    const y = (value) => T + (1 - (num(value) - lo) / (hi - lo || 1)) * (H - T - B);
+    const path = (points) => points.map((point, index) => `${index ? "L" : "M"}${x(point.week).toFixed(1)},${y(point.balance).toFixed(1)}`).join(" ");
+    const area = (points) => points.length
+      ? `${path(points)} L${x(points[points.length - 1].week).toFixed(1)},${H - B} L${x(points[0].week).toFixed(1)},${H - B} Z`
+      : "";
+    const floorY = y(floor);
+    const grid = [0, .33, .66, 1].map((ratio) => {
+      const value = lo + (hi - lo) * ratio;
+      const yy = y(value);
+      return `<line x1="${L}" y1="${yy}" x2="${W - R}" y2="${yy}" stroke="rgba(255,255,255,.055)" stroke-dasharray="2 5"/><text x="${L - 7}" y="${yy + 3}" text-anchor="end">${compact(value)}</text>`;
+    }).join("");
+    const weeks = [0, 2, 4, 6, 8].filter((week) => week <= maxWeek).map((week) =>
+      `<text x="${x(week)}" y="${H - 8}" text-anchor="middle">w${week}</text>`
+    ).join("");
+    const minPoint = (points, color, label) => {
+      if (!points.length) return "";
+      const point = points.reduce((best, candidate) => num(candidate.balance) < num(best.balance) ? candidate : best, points[0]);
+      return `<circle cx="${x(point.week)}" cy="${y(point.balance)}" r="3.2" fill="${color}" stroke="#0b120e" stroke-width="1.4"/><text class="min-label" x="${x(point.week) + 6}" y="${y(point.balance) - 6}">${label} ${compact(point.balance)}</text>`;
+    };
+    return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Confirmed cash trajectories for annual and monthly billing">
+      <defs>
+        <linearGradient id="monthlyFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c7f36b" stop-opacity=".12"/>
+          <stop offset="100%" stop-color="#c7f36b" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${grid}
+      ${weeks}
+      <path d="${area(monthly)}" fill="url(#monthlyFill)"/>
+      <line x1="${L}" y1="${floorY}" x2="${W - R}" y2="${floorY}" stroke="#ffc46b" stroke-width="1.2" stroke-dasharray="4 4" opacity=".78"/>
+      <text class="floor-label" x="${W - R - 2}" y="${floorY - 5}" text-anchor="end">floor ${compact(floor)}</text>
+      <path d="${path(annual)}" fill="none" stroke="#ff7c7c" stroke-width="1.9" stroke-linejoin="round"/>
+      <path d="${path(monthly)}" fill="none" stroke="#c7f36b" stroke-width="2" stroke-linejoin="round"/>
+      ${minPoint(annual, "#ff7c7c", "annual")}
+      ${minPoint(monthly, "#c7f36b", "monthly")}
+    </svg>`;
+  }
+
+  function renderCard() {
+    const card = state?.card;
+    const proposal = state?.proposal;
+    $("#card-pill").textContent = card ? "Active" : "No card";
+    $("#card-pill").className = "pill " + (card ? "lime" : "");
+    if (!card) {
+      $("#card-body").innerHTML = `<div class="empty" style="padding:22px 18px">
+        <div class="glyph">•••</div>
+        <h4>No card exists yet</h4>
+        <p>Approve a pending proposal. The application will issue a sealed passport, derive controls from it, and only then create the virtual card. The model has no path to this payload.</p>
+      </div>`;
+      return;
+    }
+    const controls = card.controls || {};
+    const limits = controls.transaction_limits?.limits || [];
+    const perTx = limits.find((limit) => limit.interval === "PER_TRANSACTION")?.amount;
+    const cumulative = limits.find((limit) => ["MONTHLY", "ALL_TIME"].includes(limit.interval));
+    const earlier = state.passport_matches_current_intent === "MISMATCH";
+    $("#card-body").innerHTML = `
+      <div class="card-visual">
+        <div class="card-top">
+          <div class="card-brand"><span class="m">M</span> MANDATE</div>
+          <span class="card-type">VIRTUAL · SANDBOX</span>
+        </div>
+        <div class="card-number">${esc(shortId(card.id)).toUpperCase()}</div>
+        <div class="card-bottom"><span>CONTROLS · <b>${esc(controls.allowed_transaction_count || "—")}</b></span><span>USD · MCC ${esc((controls.allowed_merchant_categories || []).join(", "))}</span></div>
+      </div>
+      <div class="limit-chips">
+        <span class="chip">per transaction <b>${money(perTx)}</b></span>
+        <span class="chip">${esc(cumulative?.interval || "cumulative")} cap <b>${money(cumulative?.amount)}</b></span>
+        <span class="chip">currency <b>${esc((controls.allowed_currencies || []).join(", "))}</b></span>
+        <span class="chip">MCC <b>${esc((controls.allowed_merchant_categories || []).join(", "))}</b></span>
+      </div>
+      ${earlier ? `<div class="approval-box stale" style="margin-top:12px;padding:11px"><div class="stripe" style="margin:0"><span class="icon">↺</span><p><strong>This card belongs to an earlier approval.</strong>The new proposal requires a fresh passport and a fresh card. Existing limits still apply to this card.</p></div></div>` : ""}
+      <div class="card-actions">
+        <button class="btn danger" data-act="charge" data-amount="19680">Try annual $19,680</button>
+        <button class="btn primary" data-act="charge" data-amount="2000">Try monthly $2,000</button>
+      </div>
+      <div class="custom-charge">
+        <input id="custom-amount" inputmode="decimal" placeholder="Custom amount, e.g. 500.00" aria-label="Custom authorization amount">
+        <button class="btn" data-act="custom-charge">Authorize</button>
+      </div>
+      <p class="panel-note" style="margin-top:9px">Authorization-only simulation. Card controls decide, not the prompt. No funds move.</p>
+      ${proposal && proposal.status === "PENDING_APPROVAL" ? "" : ""}
+    `;
+  }
+
+  function renderQuote() {
+    const quote = state?.quote;
+    if (!quote) return;
+    const terms = quote.terms;
+    $("#quote-body").innerHTML = `
+      <div class="quote-vendor">${esc(terms.vendor)}</div>
+      <div class="quote-product">CloudMetrics Enterprise Observability</div>
+      <div class="price-row"><span>Monthly · 4-week cycle</span><b>${money(terms.monthly_price)}</b></div>
+      <div class="price-row"><span>Annual · prepaid 12 months</span><b>${money(terms.annual_price)}</b></div>
+      <div class="price-row"><span>Annual saving</span><b style="color:var(--lime)">+${money(num(terms.monthly_price) * 12 - num(terms.annual_price))}</b></div>
+      <div class="quote-meta">
+        <div class="kv"><span>Quote</span><b>${esc(quote.reference)}</b></div>
+        <div class="kv"><span>MCC</span><b>${esc(terms.merchant_category)} · Computer software</b></div>
+        <div class="kv"><span>Renewal</span><b>2026-11-20</b></div>
+        <div class="kv"><span>Notice</span><b>7 days · deadline 2026-11-13</b></div>
+        <div class="kv"><span>Evidence</span><b title="${esc(quote.sha256)}">${esc(shortHash(quote.sha256, 20))}</b></div>
+      </div>
+      <details class="raw"><summary>View untrusted source document</summary><pre>${esc(quote.text)}</pre></details>
+    `;
+  }
+
+  function renderPassport() {
+    const passport = state?.passport;
+    const pill = $("#passport-pill");
+    if (!passport) {
+      pill.textContent = "None";
+      pill.className = "pill";
+      $("#passport-body").innerHTML = `<div class="passport-empty">No sealed approval yet. The passport appears only after a human approves the exact terms.</div>`;
+      return;
+    }
+    const valid = passport.validation_status === "VALID";
+    pill.textContent = passport.validation_status;
+    pill.className = "pill " + (valid ? "lime" : "red");
+    const matches = state.passport_matches_current_intent;
+    $("#passport-body").innerHTML = `
+      <div class="passport-status">
+        <span class="panel-note">${esc(passport.billing_cadence)} · ${money(passport.amount)} ${esc(passport.currency)}</span>
+        ${statusTag(passport.validation_status)}
+      </div>
+      <div class="quote-meta">
+        <div class="kv"><span>Approval</span><b>${esc(passport.approval_id)}</b></div>
+        <div class="kv"><span>MCC</span><b>${esc(passport.merchant_category)}</b></div>
+        <div class="kv"><span>Expires</span><b>${esc(passport.approval_expiry)}</b></div>
+        <div class="kv"><span>Intent hash</span><b title="${esc(passport.intent_hash)}">${esc(shortHash(passport.intent_hash, 24))}</b></div>
+        <div class="kv"><span>Record seal</span><b title="${esc(passport.record_seal)}">${esc(shortHash(passport.record_seal, 24))}</b></div>
+        <div class="kv"><span>Current intent</span><b>${matches ? statusTag(matches) : "—"}</b></div>
+      </div>
+      ${matches === "MISMATCH" ? `<div class="stripe"><span class="icon">!</span><p><strong>Passport does not match the new proposal.</strong>A fresh approval is required; this passport only covers its original terms.</p></div>` : ""}
+    `;
+  }
+
+  function renderLive() {
+    const live = state?.live_plan;
+    if (!live) {
+      $("#live-body").innerHTML = `<div class="passport-empty">Run the engine to see whether the approved plan still fits the floor.</div>`;
+      return;
+    }
+    const freeze = live.decision !== "HOLD";
+    $("#live-body").innerHTML = `
+      <div class="approval-title"><span class="live-badge ${freeze ? "freeze" : ""}">${esc(live.decision)}</span><span class="panel-note">${esc(live.plan)} · ${live.remaining_payments} left</span></div>
+      <p class="live-reason">${esc(live.reason)}</p>
+      <div class="limit-chips">
+        <span class="chip">minimum <b>${money(live.minimum_balance)}</b></span>
+        <span class="chip">week <b>${live.minimum_week}</b></span>
+        <span class="chip">shortfall <b>${money(live.shortfall)}</b></span>
+      </div>
+    `;
+  }
+
+  function renderTransactions() {
+    const items = [...(state?.transactions || [])].reverse();
+    const body = $("#tx-body");
+    if (!items.length) {
+      body.innerHTML = `<div class="empty-line">No authorization attempts yet. Approve a card, then try the annual and monthly charges.</div>`;
+      return;
+    }
+    body.innerHTML = `<div class="tx-list">${items.slice(0, 8).map((tx) => `
+      <div class="tx">
+        <span class="tx-status ${tx.status === "DECLINED" ? "declined" : ""}">${esc(tx.status)}</span>
+        <div class="tx-main"><b>${esc(tx.merchant)}</b><span>MCC ${esc(tx.merchant_category)} · ${esc(tx.decline_reason || "within card controls")}${tx.captured ? " · captured" : " · authorization"}</span></div>
+        <div class="tx-amount">${money(tx.amount)}<small>USD</small></div>
+      </div>`).join("")}</div>`;
+  }
+
+  function renderLab() {
+    const target = $("#lab-result");
+    if (!lab) {
+      target.innerHTML = `<div class="passport-empty" style="margin-top:10px">Try a probe. Results are generated from the same application state used by the CLI.</div>`;
+      return;
+    }
+    const lines = lab.lines || [];
+    target.innerHTML = `<div class="lab-result"><h5>${esc(lab.title || lab.changed_field || "Probe result")}</h5>${lines.map((line) => `<p>${esc(line)}</p>`).join("")}${lab.flags ? `<ul>${lab.flags.map((flag) => `<li><code>${esc(flag.type)}</code> at line ${esc(flag.line)}: ${esc(flag.excerpt)}</li>`).join("")}</ul>` : ""}${lab.steps ? `<ul>${lab.steps.map((step) => `<li>${esc(step.step)}${step.request_id ? ` · <code>${esc(step.request_id)}</code>` : ""}${step.same_request_id !== undefined ? ` · same ID: ${step.same_request_id}` : ""}</li>`).join("")}</ul>` : ""}</div>`;
+  }
+
+  function renderLog() {
+    const events = [...(state?.events || [])].reverse();
+    $("#log-body").innerHTML = events.length
+      ? events.slice(0, 14).map((event) => `
+        <div class="log-row">
+          <time>${esc(String(event.at).slice(11, 19))}</time>
+          <b>${esc(event.kind)}</b>
+          <span>${esc(event.message)}</span>
+        </div>`).join("")
+      : `<div class="empty-line">No events.</div>`;
+  }
+
+  function render() {
+    if (!state) return;
+    renderBalance();
+    renderDecision();
+    renderCard();
+    renderQuote();
+    renderPassport();
+    renderLive();
+    renderTransactions();
+    renderLab();
+    renderLog();
+  }
+
+  function resetLab() {
+    lab = null;
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-act]");
+    if (!button) return;
+    const action = button.dataset.act;
+    if (action === "run") {
+      resetLab();
+      perform("/api/run", {}, "Policy engine evaluated the quote.");
+    } else if (action === "approve") {
+      perform("/api/approve", { approval_token: button.dataset.token }, "Passport sealed and virtual card created.");
+    } else if (action === "receipt") {
+      resetLab();
+      perform("/api/receipt", {}, "Synthetic receivable landed. Re-run the engine to re-plan.");
+    } else if (action === "charge") {
+      perform("/api/simulate", { amount: button.dataset.amount, mcc: "5734", merchant: "CloudMetrics Inc" }, "Authorization simulated.");
+    } else if (action === "custom-charge") {
+      const input = $("#custom-amount");
+      const amount = input ? input.value.trim() : "";
+      if (!amount) { toast("Enter an amount first.", true); return; }
+      perform("/api/simulate", { amount, mcc: "5734", merchant: "CloudMetrics Inc" }, "Authorization simulated.");
+    } else if (action === "live-plan") {
+      perform("/api/live-plan", {}, "Live-plan re-check completed.");
+    } else if (action === "injection") {
+      perform("/api/injection", {}, "Injection document treated as data.");
+    } else if (action === "tamper") {
+      perform("/api/tamper", {}, "Tamper probe completed.");
+    } else if (action === "retry") {
+      perform("/api/retry", {}, "Retry registry probe completed.");
+    } else if (action === "reset") {
+      if (window.confirm("Reset the in-memory sandbox and clear the approval?")) {
+        resetLab();
+        perform("/api/reset", {}, "Demo reset.");
+      }
+    }
+  });
+
+  async function boot() {
+    try {
+      const data = await api("/api/state");
+      state = data;
+      render();
+    } catch (error) {
+      toast(error.message, true);
+      $("#decision-body").innerHTML = `<div class="empty"><div class="glyph">!</div><h4>Dashboard could not reach the server</h4><p>${esc(error.message)}</p></div>`;
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

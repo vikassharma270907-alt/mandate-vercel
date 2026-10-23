@@ -1,0 +1,10 @@
+.git
+.vercel
+__pycache__
+*.pyc
+.venv
+tests
+docs
+examples
+smoke_test.py
+live_smoke.py
