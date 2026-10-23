@@ -200,6 +200,11 @@ def health():
     )
 
 
+@app.get("/favicon.ico")
+def favicon():
+    return "", 204
+
+
 @app.get("/api/state")
 def state():
     return _respond(_new_application(received=False))
