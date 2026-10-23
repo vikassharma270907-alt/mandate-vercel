@@ -46,7 +46,7 @@ python live_smoke.py --url https://mandate-vercel.vercel.app
 
 ## Deploy
 
-With the Vercel CLI logged in:
+This Vercel project is connected to the `mandate-vercel` GitHub repository. Pushes to `main` deploy automatically. To deploy manually with the Vercel CLI logged in:
 
 ```powershell
 vercel --prod
