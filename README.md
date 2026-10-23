@@ -81,6 +81,14 @@ The public demo falls back to a fixed sandbox-only key. Every value is synthetic
 
 The `mandate/` directory is copied from the main repository. When the main engine changes, re-copy `mandate/` and `fixtures/` here, then rerun `python smoke_test.py`.
 
+## Verification
+
+- Local wrapper smoke test (`python smoke_test.py`): passed
+- Live production smoke test (`python live_smoke.py`): passed
+- Browser walkthrough (Playwright): run → approve monthly → annual decline → monthly approve → receipt → re-plan annual → approve annual → annual approve; console clean
+- Largest portable state observed: **16,718 bytes**
+- Production URL returns HTTP 200 without Vercel authentication
+
 ## What remains unconfirmed
 
 Live Airwallex sandbox behaviour is still **UNCONFIRMED**. This deployment uses only the in-memory fake adapter. See the main repository's `docs/SANDBOX_RUNBOOK.md`.
